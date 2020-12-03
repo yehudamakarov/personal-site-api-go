@@ -2,14 +2,14 @@ package infrastructure
 
 import pr "github.com/yehudamakarov/personal-site-proto/packages/go/pinnedRepository"
 
-type Github struct {
+type GithubService struct {
 	credentials string
 }
 
-func NewGithubService(credentials string) *Github {
-	return &Github{credentials: credentials}
+func NewGithubService(credentials string) *GithubService {
+	return &GithubService{credentials: credentials}
 }
 
-func (g Github) FetchPinnedRepositories() ([]pr.PinnedRepository, error) {
+func (g GithubService) FetchPinnedRepositories() ([]pr.PinnedRepository, error) {
 	return []pr.PinnedRepository{}, nil
 }

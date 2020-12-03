@@ -4,29 +4,19 @@ import (
 	"context"
 
 	pr "github.com/yehudamakarov/personal-site-proto/packages/go/pinnedRepository"
-	"personal-site-api-go/internal/pinnedrepositorysync/infrastructure"
 )
 
-func GetPinnedRepositoryService(githubCredentials string, db infrastructure.Db) *pr.PinnedRepositoryService {
+func GetPinnedRepositoryService(githubService IGithubService, db IPinnedRepositoryData) *pr.PinnedRepositoryService {
 	prEnv := &env{
-		githubService: infrastructure.NewGithubService(githubCredentials),
+		githubService: githubService,
 		persistence:   db,
 	}
 	return &pr.PinnedRepositoryService{Sync: prEnv.sync}
-
-}
-
-type iPinnedRepositoryData interface {
-	UpsertMany([]pr.PinnedRepository) ([]pr.PinnedRepository, error)
-}
-
-type iGithubService interface {
-	FetchPinnedRepositories() ([]pr.PinnedRepository, error)
 }
 
 type env struct {
-	githubService iGithubService
-	persistence   iPinnedRepositoryData
+	githubService IGithubService
+	persistence   IPinnedRepositoryData
 }
 
 func (e env) sync(c context.Context, req *pr.SyncPinnedRepositoryRequest) (*pr.SyncPinnedRepositoryResponse, error) {

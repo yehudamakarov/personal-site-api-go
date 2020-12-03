@@ -12,23 +12,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
 	prApplication "personal-site-api-go/internal/pinnedrepositorysync/application"
-	"personal-site-api-go/internal/pinnedrepositorysync/infrastructure"
 )
 
 func main() {
 	port := os.Getenv("PORT")
 	dbUri := os.Getenv("DB_URI")
 	githubCredentials := os.Getenv("GITHUB_CREDENTIALS")
-
-	// ================================================ //
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbUri))
-	defer func() {
-		if err = client.Disconnect(ctx); err != nil {
-			panic(err)
-		}
-	}()
 
 	// ================================================ //
 	listener, err := net.Listen("tcp", port)
@@ -38,9 +27,16 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	// ================================================ //
+	client, err := getDbConnection(dbUri)
+	defer disconnectFromDb(client)
+
+	// ================================================ //
 	prDomain.RegisterPinnedRepositoryService(
 		grpcServer,
-		prApplication.GetPinnedRepositoryService(githubCredentials, getDbPinnedRepository(client)),
+		prApplication.GetPinnedRepositoryService(
+			GetServiceGithub(githubCredentials),
+			GetDbPinnedRepository(client),
+		),
 	)
 
 	// ================================================ //
@@ -50,6 +46,20 @@ func main() {
 	}
 }
 
-func getDbPinnedRepository(client *mongo.Client) infrastructure.Db {
-	return infrastructure.Db{Coll: client.Database("personal-site").Collection("pinned-repository")}
+func disconnectFromDb(client *mongo.Client) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	if err := client.Disconnect(ctx); err != nil {
+		log.Fatalf("There was a problem disconnecting from the DB: ")
+	}
+}
+
+func getDbConnection(dbUri string) (*mongo.Client, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbUri))
+	if err != nil {
+		log.Fatalf("There was a problem connecting to the DB: %v", err)
+	}
+	return client, err
 }

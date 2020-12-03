@@ -5,8 +5,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+const database = "personal-site"
+const collection = "pinned-repository"
+
 type Db struct {
-	Coll *mongo.Collection
+	coll *mongo.Collection
+}
+
+func Init(client *mongo.Client) *Db {
+	return &Db{
+		coll: client.Database(database).Collection(collection),
+	}
 }
 
 func (d Db) UpsertMany([]pr.PinnedRepository) ([]pr.PinnedRepository, error) {
