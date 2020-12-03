@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -40,6 +41,7 @@ func main() {
 	)
 
 	// ================================================ //
+	fmt.Printf("Server seems to be listening at %s", port)
 	err = grpcServer.Serve(listener)
 	if err != nil {
 		log.Fatalf("gRpc server won't spin up: %v", err)
