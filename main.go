@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
 	prApplication "personal-site-api-go/internal/pinnedrepositorysync/application"
+	"personal-site-api-go/internal/pinnedrepositorysync/infrastructure"
 )
 
 func main() {
@@ -39,7 +40,7 @@ func main() {
 	// ================================================ //
 	prDomain.RegisterPinnedRepositoryService(
 		grpcServer,
-		prApplication.GetPinnedRepositoryService(githubCredentials, client),
+		prApplication.GetPinnedRepositoryService(githubCredentials, getDbPinnedRepository(client)),
 	)
 
 	// ================================================ //
@@ -47,4 +48,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("gRpc server won't spin up: %v", err)
 	}
+}
+
+func getDbPinnedRepository(client *mongo.Client) infrastructure.Db {
+	return infrastructure.Db{Coll: client.Database("personal-site").Collection("pinned-repository")}
 }

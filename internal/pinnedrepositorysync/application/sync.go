@@ -4,14 +4,13 @@ import (
 	"context"
 
 	pr "github.com/yehudamakarov/personal-site-proto/packages/go/pinnedRepository"
-	"go.mongodb.org/mongo-driver/mongo"
 	"personal-site-api-go/internal/pinnedrepositorysync/infrastructure"
 )
 
-func GetPinnedRepositoryService(githubCredentials string, client *mongo.Client) *pr.PinnedRepositoryService {
+func GetPinnedRepositoryService(githubCredentials string, db infrastructure.Db) *pr.PinnedRepositoryService {
 	prEnv := &env{
 		githubService: infrastructure.NewGithubService(githubCredentials),
-		persistence:   infrastructure.Db{Coll: client.Database("personal-site").Collection("pinned-repository")},
+		persistence:   db,
 	}
 	return &pr.PinnedRepositoryService{Sync: prEnv.sync}
 

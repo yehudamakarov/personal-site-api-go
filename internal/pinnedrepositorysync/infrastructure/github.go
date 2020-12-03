@@ -4,8 +4,6 @@ import pr "github.com/yehudamakarov/personal-site-proto/packages/go/pinnedReposi
 
 type Github struct {
 	credentials string
-
-	// url & credentials
 }
 
 func NewGithubService(credentials string) *Github {
