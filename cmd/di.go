@@ -1,15 +1,15 @@
 package main
 
 import (
-	"go.mongodb.org/mongo-driver/mongo"
+	"gorm.io/gorm"
 	"personal-site-api-go/internal/pinnedrepositorysync/application"
 	"personal-site-api-go/internal/pinnedrepositorysync/infrastructure"
 )
 
-func GetServiceGithub(githubCredentials string) application.IGithubService {
+func GithubService(githubCredentials string) application.IGithubService {
 	return infrastructure.NewGithubService(githubCredentials)
 }
 
-func GetDbPinnedRepository(client *mongo.Client) application.IPinnedRepositoryData {
+func PinnedRepositoryDataAccess(client *gorm.DB) application.IPinnedRepositoryDataAccess {
 	return infrastructure.Init(client)
 }

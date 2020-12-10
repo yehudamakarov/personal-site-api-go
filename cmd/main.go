@@ -1,17 +1,15 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net"
 	"os"
-	"time"
 
 	prDomain "github.com/yehudamakarov/personal-site-proto/packages/go/pinnedRepository"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	prApplication "personal-site-api-go/internal/pinnedrepositorysync/application"
 )
 
@@ -28,15 +26,15 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	// ================================================ //
-	client, err := getDbConnection(dbUri)
-	defer disconnectFromDb(client)
+	dbConnection, err := getDbConnection(dbUri)
+	defer disconnectFromDb(dbConnection)
 
 	// ================================================ //
 	prDomain.RegisterPinnedRepositoryService(
 		grpcServer,
 		prApplication.GetPinnedRepositoryService(
-			GetServiceGithub(githubCredentials),
-			GetDbPinnedRepository(client),
+			GithubService(githubCredentials),
+			PinnedRepositoryDataAccess(dbConnection),
 		),
 	)
 
@@ -48,20 +46,10 @@ func main() {
 	}
 }
 
-func disconnectFromDb(client *mongo.Client) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	if err := client.Disconnect(ctx); err != nil {
-		log.Fatalf("There was a problem disconnecting from the DB: ")
-	}
+func disconnectFromDb(client *gorm.DB) {
+
 }
 
-func getDbConnection(dbUri string) (*mongo.Client, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbUri))
-	if err != nil {
-		log.Fatalf("There was a problem connecting to the DB: %v", err)
-	}
-	return client, err
+func getDbConnection(dbUri string) (*gorm.DB, error) {
+	return gorm.Open(postgres.Open(dbUri), &gorm.Config{})
 }

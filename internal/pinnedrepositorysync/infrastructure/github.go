@@ -11,5 +11,6 @@ func NewGithubService(credentials string) *GithubService {
 }
 
 func (g GithubService) FetchPinnedRepositories() ([]pr.PinnedRepository, error) {
+	// todo make github call here
 	return []pr.PinnedRepository{}, nil
 }

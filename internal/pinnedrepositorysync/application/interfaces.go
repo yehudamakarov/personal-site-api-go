@@ -2,7 +2,7 @@ package application
 
 import "github.com/yehudamakarov/personal-site-proto/packages/go/pinnedRepository"
 
-type IPinnedRepositoryData interface {
+type IPinnedRepositoryDataAccess interface {
 	UpsertMany([]pinnedRepository.PinnedRepository) ([]pinnedRepository.PinnedRepository, error)
 }
 
