@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 
 	prDomain "github.com/yehudamakarov/personal-site-proto/packages/go/pinnedRepository"
@@ -16,7 +17,7 @@ import (
 func main() {
 	port := os.Getenv("PORT")
 	dbUri := os.Getenv("DB_URI")
-	githubCredentials := os.Getenv("GITHUB_CREDENTIALS")
+	githubCredentials := os.Getenv("GITHUB_ACCESS_TOKEN")
 
 	// ================================================ //
 	listener, err := net.Listen("tcp", port)
@@ -24,6 +25,8 @@ func main() {
 		log.Fatalf("Can't establish listener: %v", err)
 	}
 	grpcServer := grpc.NewServer()
+	// client's settings should not to be changed per the individual infrastructure component that uses client.
+	client := http.Client{}
 
 	// ================================================ //
 	dbConnection, err := getDbConnection(dbUri)
@@ -33,7 +36,7 @@ func main() {
 	prDomain.RegisterPinnedRepositoryService(
 		grpcServer,
 		prApplication.GetPinnedRepositoryService(
-			GithubService(githubCredentials),
+			GithubService(githubCredentials, &client),
 			PinnedRepositoryDataAccess(dbConnection),
 		),
 	)
